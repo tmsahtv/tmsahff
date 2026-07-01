@@ -33,6 +33,12 @@
         <button onclick="search()" class="bg-pink-600 px-8 rounded-xl font-bold hover:bg-pink-700 transition">بحث عن طلباتي</button>
     </div>
 
+    <div class="glass px-6 py-3 rounded-2xl mb-4 grid grid-cols-4 text-center text-sm font-bold text-neutral-500">
+        <div>الطلب</div>
+        <div>التاريخ</div>
+        <div>الحالة</div>
+        <div>الإجراءات</div>
+    </div>
     <div id="results" class="space-y-4"></div>
 </div>
 
@@ -56,7 +62,7 @@
         const res = document.getElementById('results');
         if (!user) { alert("أدخل اليوزر أولاً"); return; }
         
-        res.innerHTML = '<p class="text-center">جاري البحث عن طلباتك...</p>';
+        res.innerHTML = '<p class="text-center text-neutral-500">جاري البحث...</p>';
 
         try {
             const response = await fetch('data.csv');
@@ -66,24 +72,25 @@
 
             rows.forEach(row => {
                 const cols = row.split(',');
-                // تطابق دقيق لليوزر في العمود الأول
-if (cols[0] && cols[0].trim().toLowerCase() === user.toLowerCase()) {
-    
-    const orderName = cols[1] ? cols[1].trim() : 'طلب';
-                    const status = cols[2] ? cols[2].trim() : 'قيد الشحن';
+                // ترتيب الأعمدة: 0=اليوزر، 1=الطلب، 2=التاريخ، 3=الحالة
+                if (cols[0] && cols[0].trim().toLowerCase() === user.toLowerCase()) {
+                    const orderName = cols[1] ? cols[1].trim() : 'طلب';
+                    const date = cols[2] ? cols[2].trim() : '-';
+                    const status = cols[3] ? cols[3].trim() : 'قيد الشحن';
 
                     html += `
-                        <div class="glass p-5 rounded-2xl flex justify-between items-center">
+                        <div class="glass p-4 rounded-2xl grid grid-cols-4 items-center text-center text-sm">
+                            <div class="font-bold">${orderName}</div>
+                            <div class="text-neutral-400">${date}</div>
                             <div>
-                                <h3 class="font-bold text-lg">${orderName}</h3>
-                                <span class="text-xs ${status === 'قيد الشحن' ? 'text-yellow-500' : 'text-green-500'}">${status}</span>
+                                <span class="${status === 'قيد الشحن' ? 'text-yellow-500' : 'text-green-500'} font-bold">${status}</span>
                             </div>
-                            <div class="flex gap-2">
+                            <div>
                                 ${status === 'قيد الشحن' ? `
-                                    <button onclick="handleAction('استعجال', '${orderName}')" class="bg-blue-900 px-4 py-2 rounded-lg text-xs">استعجال</button>
-                                    <button onclick="handleAction('تعديل', '${orderName}')" class="bg-yellow-900 px-4 py-2 rounded-lg text-xs">تعديل</button>
-                                    <button onclick="handleAction('إلغاء', '${orderName}')" class="bg-red-900 px-4 py-2 rounded-lg text-xs">إلغاء</button>
-                                ` : `<button onclick="handleAction('تقييم', '${orderName}')" class="bg-purple-900 px-4 py-2 rounded-lg text-xs">⭐ تقييم</button>`}
+                                    <button onclick="handleAction('استعجال', '${orderName}')" class="bg-blue-900 px-3 py-1 rounded-lg text-xs">استعجال</button>
+                                ` : `
+                                    <button onclick="handleAction('تقييم', '${orderName}')" class="bg-purple-900 px-3 py-1 rounded-lg text-xs">⭐ تقييم</button>
+                                `}
                             </div>
                         </div>`;
                 }
