@@ -12,7 +12,6 @@
         .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(15px); border: 1px solid #333; }
         .kick-live { border: 1px solid #53fc18; box-shadow: 0 0 10px #53fc1866; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(83, 252, 24, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(83, 252, 24, 0); } 100% { box-shadow: 0 0 0 0 rgba(83, 252, 24, 0); } }
-        .modal { display: none; position: fixed; inset: 0; background: #000d; z-index: 50; align-items: center; justify-content: center; }
     </style>
 </head>
 <body class="bg-glow min-h-screen p-4 md:p-8">
@@ -25,14 +24,14 @@
         </div>
         <div class="flex flex-wrap gap-8 justify-center mt-8 text-2xl">
             <a href="https://kick.com/tmsahff" class="kick-live flex items-center gap-2 bg-black px-5 py-2 rounded-full text-[#53fc18]"><i class="fas fa-tv"></i> <span>KICK LIVE</span></a>
-            <a href="https://tiktok.com/@tmsahfreefire" class="hover:text-white transition"><i class="fab fa-tiktok"></i> تيك توك</a>
-            <a href="https://wa.me/201010247318" class="hover:text-green-500 transition"><i class="fab fa-whatsapp"></i> واتساب</a>
-            <a href="https://instagram.com/tmsahtv" class="hover:text-pink-400 transition"><i class="fab fa-instagram"></i> انستجرام</a>
+            <a href="https://tiktok.com/@tmsahfreefire" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+            <a href="https://wa.me/201010247318" class="hover:text-green-500 transition"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://instagram.com/tmsahtv" class="hover:text-pink-400 transition"><i class="fab fa-instagram"></i></a>
         </div>
     </div>
 
     <div class="glass p-6 rounded-2xl flex gap-4 mb-8 border border-neutral-800">
-        <input id="userInput" class="flex-1 bg-transparent p-3 outline-none text-white text-lg" placeholder=" ااكتب اسم يوزر الكيك ">
+        <input id="userInput" class="flex-1 bg-transparent p-3 outline-none text-white text-lg" placeholder="اكتب اسم يوزر الكيك للبحث...">
         <button onclick="search()" class="bg-pink-600 px-10 py-3 rounded-xl font-black hover:bg-pink-700 transition">بحث</button>
     </div>
 
@@ -43,6 +42,7 @@
                     <th class="p-6">اليوزر</th>
                     <th class="p-6">الطلب</th>
                     <th class="p-6">التاريخ</th>
+                    <th class="p-6">السعر</th>
                     <th class="p-6">الحالة</th>
                     <th class="p-6">إجراءات</th>
                 </tr>
@@ -69,13 +69,13 @@
             rows.forEach(row => {
                 const cols = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
                 if (!cols) return;
-                const userInRow = cols[0].replace(/"/g, '').trim();
                 
-                // بحث عام يحتوي على الحروف المدخلة
+                const userInRow = cols[0].replace(/"/g, '').trim();
                 if (userInRow.toLowerCase().includes(query)) {
                     const article = cols[1]?.replace(/"/g, '');
                     const date = cols[5]?.replace(/"/g, '') || '-';
-                    const statusRaw = cols[6]?.trim();
+                    const price = cols[6]?.replace(/"/g, '') || '0'; // افترضت أن السعر في العمود السابع
+                    const statusRaw = cols[7]?.trim(); // افترضت أن الحالة في العمود الثامن
                     const status = statusRaw === 'Delivered' ? '✅ تم التوصيل' : '⏳ قيد الشحن';
 
                     html += `
@@ -83,25 +83,45 @@
                         <td class="p-6 font-bold text-pink-400">${userInRow}</td>
                         <td class="p-6 font-bold">${article}</td>
                         <td class="p-6 text-sm text-neutral-400">${date}</td>
+                        <td class="p-6 text-yellow-400">${price}</td>
                         <td class="p-6 ${statusRaw === 'Delivered' ? 'text-green-500' : 'text-yellow-500'} font-bold">${status}</td>
                         <td class="p-6 flex gap-2">
-                            ${statusRaw === 'Pending' ? `
-                                <button onclick="sendAction('استعجال', '${article}', '${userInRow}')" class="bg-blue-900/80 px-3 py-1 rounded text-xs">استعجال</button>
-                                <button onclick="sendAction('إلغاء', '${article}', '${userInRow}')" class="bg-red-900/80 px-3 py-1 rounded text-xs">إلغاء</button>
-                            ` : `<button onclick="alert('تم تقييم التجربة، شكراً لك! ⭐')" class="bg-purple-900/80 px-4 py-1 rounded text-xs">⭐ تقييم</button>`}
+                            ${statusRaw !== 'Delivered' ? `
+                                <button onclick="sendAction('استعجال', '${article}', '${userInRow}')" class="bg-blue-900/80 px-3 py-1 rounded text-xs hover:bg-blue-700">استعجال</button>
+                                <button onclick="sendAction('إلغاء', '${article}', '${userInRow}')" class="bg-red-900/80 px-3 py-1 rounded text-xs hover:bg-red-700">إلغاء</button>
+                            ` : `<button onclick="alert('تم التقييم، شكراً!')" class="bg-purple-900/80 px-4 py-1 rounded text-xs">⭐ تقييم</button>`}
                         </td>
                     </tr>`;
                 }
             });
-            res.innerHTML = html || '<tr><td colspan="5" class="p-10 text-center text-red-500">لا يوجد مستخدم بهذا الاسم</td></tr>';
-        } catch (e) { alert("خطأ في تحميل ملف البيانات"); }
+            res.innerHTML = html || '<tr><td colspan="6" class="p-10 text-center text-red-500">لا يوجد مستخدم بهذا الاسم</td></tr>';
+        } catch (e) { alert("خطأ في تحميل البيانات"); }
     }
 
     async function sendAction(type, order, user) {
-        if (type === 'تقييم') return; 
-        const payload = { embeds: [{ title: `🔔 إجراء: ${type}`, fields: [{ name: "اليوزر", value: user }, { name: "الطلب", value: order }] }] };
-        await fetch(WEBHOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-        alert("تم إرسال طلب " + type + " للإدارة!");
+        const payload = { 
+            embeds: [{ 
+                title: `🔔 إجراء: ${type}`, 
+                color: type === 'إلغاء' ? 16711680 : 3447003,
+                fields: [
+                    { name: "👤 اليوزر", value: user, inline: true },
+                    { name: "📦 الطلب", value: order, inline: true }
+                ] 
+            }] 
+        };
+        
+        try {
+            const response = await fetch(WEBHOOK, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+            if(response.ok) {
+                alert("تم إرسال طلب " + type + " للإدارة بنجاح!");
+            } else {
+                alert("حدث خطأ أثناء الإرسال.");
+            }
+        } catch (e) { alert("خطأ في الاتصال بالديسكورد"); }
     }
 </script>
 </body>
