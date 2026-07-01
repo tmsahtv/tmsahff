@@ -1,4 +1,4 @@
-const WEBHOOK = "ضع_رابط_الديسكورد_هنا";
+const WEBHOOK = "https://discord.com/api/webhooks/1521713795477667860/Ma3vk6FfyfXCCdYBLE_EMg679hFg2w8nJR4DKTKTtbdwZjMgs1H6WoKYQgRLMH4nMKi5";
 
 async function search() {
     const user = document.getElementById('userInput').value.trim();
