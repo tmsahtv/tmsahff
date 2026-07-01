@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        body { font-family: 'Cairo', sans-serif; background: #050505; color: white; }
+        .card { background: #111; border: 1px solid #222; transition: 0.3s; }
+        .glass-btn { transition: 0.3s; }
+        .glass-btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-10 p-6 rounded-3xl card">
+        <h1 class="text-3xl font-black text-pink-500">TMSAHFF STORE <i class="fas fa-store"></i></h1>
+        <a href="https://botrix.live/k/tmsahff/shop" target="_blank" class="text-neutral-400 hover:text-pink-500 text-2xl">
+            <img src="https://botrix.live/favicon.ico" class="w-8 inline-block" alt="Botrix">
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="flex gap-4 mb-8">
+        <input type="text" id="userInput" placeholder="اكتب يوزرك هنا..." class="flex-1 bg-[#111] border border-neutral-800 p-4 rounded-2xl outline-none focus:border-pink-500 transition">
+        <button onclick="search()" class="bg-pink-600 px-8 rounded-2xl font-bold hover:bg-pink-700">بحث</button>
+    </div>
+
+    <!-- Results Table -->
+    <div id="results" class="card rounded-3xl overflow-hidden p-2">
+        <p class="text-center py-20 text-neutral-600">انتظر منك كتابة الاسم للبحث عن طلباتك...</p>
+    </div>
+</div>
+
+<script>
+    const WEBHOOK = "https://discord.com/api/webhooks/1521713795477667860/Ma3vk6FfyfXCCdYBLE_EMg679hFg2w8nJR4DKTKTtbdwZjMgs1H6WoKYQgRLMH4nMKi5";
+
+    async function search() {
+        const user = document.getElementById('userInput').value.trim().toLowerCase();
+        const resDiv = document.getElementById('results');
+        const response = await fetch('data.csv');
+        const text = await response.text();
+        const rows = text.split('\n');
+        
+        let html = `<table class="w-full text-center border-collapse">
+            <thead class="bg-[#1a1a1a]"><tr class="text-neutral-400"><th class="p-4">الطلب</th><th class="p-4">السعر</th><th class="p-4">التاريخ</th><th class="p-4">الحالة</th><th class="p-4">إجراء</th></tr></thead>
+            <tbody>`;
+        let found = false;
+
+        for(let i = 1; i < rows.length; i++) {
+            const row = rows[i].toLowerCase();
+            if(row.includes(user)) {
+                const isDelivered = row.includes('delivered');
+                const cols = rows[i].split(',');
+                
+                html += `<tr class="border-b border-[#222] hover:bg-[#1a1a1a]">
+                    <td class="p-4 font-bold text-pink-300">${cols[1] || '-'}</td>
+                    <td class="p-4">${cols[3] || '-'}</td>
+                    <td class="p-4 text-xs text-neutral-500">${cols[5] || '-'}</td>
+                    <td class="p-4 font-bold ${isDelivered ? 'text-green-500' : 'text-yellow-500'}">
+                        ${isDelivered ? '✅ تم التوصيل' : '⏳ قيد الانتظار'}
+                    </td>
+                    <td class="p-4">
+                        ${isDelivered ? '⭐⭐⭐⭐⭐' : `
+                            <button onclick="confirmAction('استعجال', '${cols[1]}')" class="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-lg text-xs mx-1">استعجال</button>
+                            <button onclick="confirmAction('إلغاء', '${cols[1]}')" class="bg-red-900/30 text-red-400 px-3 py-1 rounded-lg text-xs mx-1">إلغاء</button>
+                        `}
+                    </td>
+                </tr>`;
+                found = true;
+            }
+        }
+        resDiv.innerHTML = found ? html + '</tbody></table>' : '<p class="text-center py-10 text-red-500">لا يوجد بيانات لهذا اليوزر.</p>';
+    }
+
+    function confirmAction(type, order) {
+        if(confirm(`⚠️ تنبيه: هل أنت متأكد من رغبتك في طلب "${type}" للطلب رقم "${order}"؟ سيتم إخطار الإدارة.`)) {
+            notify(type, order);
+        }
+    }
+
+    function notify(type, order) {
+        const user = document.getElementById('userInput').value;
+        fetch(WEBHOOK, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                content: `🔔 **تنبيه TMSAHFF**\n\n👤 العميل: **${user}**\n📦 الطلب: **${order}**\n⚠️ الإجراء المطلوب: **${type}**\n\n<@tmsah1> يرجى المتابعة.`
+            })
+        }).then(() => alert('تم إرسال طلبك للإدارة بنجاح!'));
+    }
+</script>
+
+<!-- Footer -->
+<div class="max-w-6xl mx-auto mt-10 flex justify-center gap-6 text-2xl text-neutral-500">
+    <a href="https://kick.com/tmsahff" class="hover:text-green-500"><i class="fa-brands fa-kickstarter-k"></i></a>
+    <a href="https://wa.me/201010247318" class="hover:text-green-400"><i class="fa-brands fa-whatsapp"></i></a>
+    <a href="https://tiktok.com/@tmsahfreefire" class="hover:text-white"><i class="fa-brands fa-tiktok"></i></a>
+</div>
+
+</body>
+</html>
