@@ -2,48 +2,105 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>TMSAHFF - تتبع الطلبات</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #fff; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #333; }
-        input { width: 70%; padding: 15px; border-radius: 10px; border: none; font-size: 16px; margin-bottom: 10px; }
-        button { padding: 15px 30px; background: #e91e63; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        table { width: 100%; margin-top: 25px; border-collapse: collapse; }
-        th { background: #333; padding: 12px; }
-        td { padding: 12px; border: 1px solid #333; text-align: center; }
-        .Pending { color: #ffeb3b; font-weight: bold; }
-        .Delivered { color: #4caf50; font-weight: bold; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;700;900&display=swap');
+        body { font-family: 'Cairo', sans-serif; background: #050505; color: white; }
+        .glass { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(12px); border: 1px solid #333; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
+        .animate-fade { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>🔍 استعلام عن طلبات TMSAHFF</h1>
-        <input type="text" id="userInput" placeholder="اكتب اليوزر...">
-        <button onclick="search()">عرض طلباتي</button>
-        <div id="results"></div>
+<body class="p-4 md:p-10">
+
+<div class="max-w-4xl mx-auto animate-fade">
+    <div class="glass p-6 rounded-3xl mb-8 flex justify-between items-center border-b-4 border-pink-600">
+        <div>
+            <h1 class="text-3xl font-black">TMSAHFF STORE</h1>
+            <p class="text-neutral-500">نظام التتبع المتطور</p>
+        </div>
+        <div class="flex gap-4 text-2xl">
+            <a href="#" class="hover:text-pink-500"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" class="hover:text-pink-500"><i class="fas fa-gamepad"></i></a>
+        </div>
     </div>
 
-    <script>
-        async function search() {
-            const user = document.getElementById('userInput').value.trim().toLowerCase();
-            const resDiv = document.getElementById('results');
-            const response = await fetch('data.csv');
-            const text = await response.text();
-            const rows = text.split('\n');
-            let html = '<table><tr><th>الطلب</th><th>الأيدي / الرسالة</th><th>الحالة</th></tr>';
-            let found = false;
+    <div class="glass p-3 rounded-2xl flex gap-2 mb-8">
+        <input type="text" id="userInput" placeholder="أدخل اليوزر..." class="flex-1 bg-transparent p-3 outline-none">
+        <button onclick="search()" class="bg-pink-600 px-8 rounded-xl font-bold hover:bg-pink-700 transition">بحث</button>
+    </div>
 
-            for(let i = 1; i < rows.length; i++) {
-                const cols = rows[i].split(',');
-                if(cols[0] && cols[0].trim().toLowerCase() === user) {
-                    let statusClass = cols[6] ? cols[6].trim() : 'Pending';
-                    let statusText = statusClass === 'Delivered' ? '✅ تم الشحن' : '⏳ قيد الانتظار';
-                    html += `<tr><td>${cols[1]}</td><td>${cols[2] || '-'}</td><td class="${statusClass}">${statusText}</td></tr>`;
-                    found = true;
-                }
-            }
-            resDiv.innerHTML = found ? html + '</table>' : "❌ لا توجد طلبات لهذا اليوزر.";
-        }
-    </script>
+    <div id="results" class="space-y-4"></div>
+</div>
+
+<div id="actionModal" class="modal">
+    <div class="glass p-8 rounded-3xl w-96 text-center border border-pink-500/20">
+        <h2 id="modalTitle" class="text-xl font-bold mb-4">تنفيذ إجراء</h2>
+        <textarea id="modalNote" placeholder="اكتب تفاصيل التعديل (اختياري)..." class="w-full bg-neutral-900 p-3 rounded-xl mb-4 border border-neutral-700 outline-none"></textarea>
+        <div class="flex gap-2 justify-center">
+            <button onclick="closeModal()" class="px-6 py-2 bg-neutral-800 rounded-xl">إلغاء</button>
+            <button id="confirmBtn" class="px-6 py-2 bg-pink-600 rounded-xl font-bold">تأكيد</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const WEBHOOK = "https://discord.com/api/webhooks/1521713795477667860/Ma3vk6FfyfXCCdYBLE_EMg679hFg2w8nJR4DKTKTtbdwZjMgs1H6WoKYQgRLMH4nMKi5";
+
+    async function search() {
+        const user = document.getElementById('userInput').value.trim().toLowerCase();
+        const resDiv = document.getElementById('results');
+        const response = await fetch('data.csv');
+        const data = await response.text();
+        const rows = data.split('\n');
+        
+        let html = '';
+        rows.slice(1).forEach(row => {
+            if(!row.toLowerCase().includes(user)) return;
+            const cols = row.split(',');
+            const isDelivered = row.toLowerCase().includes('delivered');
+            
+            html += `
+            <div class="glass p-5 rounded-2xl flex justify-between items-center hover:border-pink-500 transition animate-fade">
+                <div>
+                    <h3 class="font-bold text-lg">${cols[1] || 'طلب'}</h3>
+                    <p class="text-xs text-neutral-500">${cols[5] || 'لا يوجد تاريخ'} - ${new Date().getHours()}:${new Date().getMinutes()}</p>
+                    <p class="text-xs text-pink-400">ID: ${cols[0] || '---'}</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openModal('استعجال', '${cols[1]}')" class="text-xs bg-blue-900 px-3 py-1 rounded">استعجال</button>
+                    <button onclick="openModal('إلغاء', '${cols[1]}')" class="text-xs bg-red-900 px-3 py-1 rounded">إلغاء</button>
+                    <button onclick="openModal('تقييم', '${cols[1]}')" class="text-xs bg-yellow-900 px-3 py-1 rounded">⭐</button>
+                </div>
+                <span class="font-bold ${isDelivered ? 'text-green-500' : 'text-yellow-500'}">
+                    ${isDelivered ? 'تم التوصيل' : 'قيد الشحن'}
+                </span>
+            </div>`;
+        });
+        resDiv.innerHTML = html || '<p class="text-center text-red-500">لم يتم العثور على طلبات.</p>';
+    }
+
+    function openModal(type, order) {
+        document.getElementById('modalTitle').innerText = 'تأكيد ' + type;
+        document.getElementById('actionModal').style.display = 'flex';
+        document.getElementById('confirmBtn').onclick = () => {
+            const note = document.getElementById('modalNote').value;
+            sendDiscord(type, order, note);
+            closeModal();
+        };
+    }
+
+    function sendDiscord(type, order, note) {
+        fetch(WEBHOOK, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ content: `🔔 إشعار جديد:\nنوع الإجراء: ${type}\nالطلب: ${order}\nالمستخدم: ${document.getElementById('userInput').value}\nالتفاصيل: ${note || 'لا يوجد'}\nالوقت: ${new Date().toLocaleString()}` })
+        }).then(() => alert('تم إرسال طلبك للإدارة بنجاح!'));
+    }
+
+    function closeModal() { document.getElementById('actionModal').style.display = 'none'; }
+</script>
 </body>
 </html>
