@@ -14,42 +14,35 @@
 </head>
 <body class="p-4 md:p-8">
 
-<div class="max-w-4xl mx-auto">
+<div class="max-w-5xl mx-auto">
     <div class="glass rounded-3xl p-8 border-b-4 border-pink-600 mb-8 text-center">
         <h1 class="text-4xl font-black italic">TMSAHFF STORE</h1>
-        <p class="text-neutral-500 font-bold mt-2">نظام الإدارة والتحكم الاحترافي</p>
-        
-        <div class="flex flex-wrap gap-6 justify-center mt-8 text-2xl">
-            <a href="https://botrix.live/k/tmsahff/shop" class="hover:text-pink-500 transition"><i class="fas fa-store"></i></a>
-            <a href="https://wa.me/201010247318" class="hover:text-green-500 transition"><i class="fab fa-whatsapp"></i></a>
-            <a href="https://tiktok.com/@tmsahfreefire" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
-            <a href="https://instagram.com/tmsahtv" class="hover:text-pink-400 transition"><i class="fab fa-instagram"></i></a>
-            <a href="https://kick.com/tmsahff" class="hover:text-green-400 transition"><i class="fas fa-video"></i></a>
-        </div>
+        <p class="text-neutral-500 font-bold mt-2">تتبع طلباتك بدقة واحترافية</p>
     </div>
 
     <div class="glass p-4 rounded-2xl flex gap-2 mb-8">
-        <input id="userInput" class="flex-1 bg-transparent p-3 outline-none" placeholder="أدخل اليوزر الخاص بك...">
-        <button onclick="search()" class="bg-pink-600 px-8 rounded-xl font-bold hover:bg-pink-700 transition">بحث عن طلباتي</button>
+        <input id="userInput" class="flex-1 bg-transparent p-3 outline-none" placeholder="اكتب اليوزر...">
+        <button onclick="search()" class="bg-pink-600 px-8 rounded-xl font-bold hover:bg-pink-700 transition">بحث</button>
     </div>
 
-    <div class="glass px-6 py-3 rounded-2xl mb-4 grid grid-cols-4 text-center text-sm font-bold text-neutral-500">
+    <div class="glass px-6 py-4 rounded-2xl mb-4 grid grid-cols-5 text-center font-bold text-neutral-400 text-sm">
         <div>الطلب</div>
+        <div>السعر</div>
         <div>التاريخ</div>
         <div>الحالة</div>
         <div>الإجراءات</div>
     </div>
+
     <div id="results" class="space-y-4"></div>
 </div>
 
 <div id="actionModal" class="modal">
     <div class="glass p-6 rounded-3xl w-96 border border-pink-500/30">
         <h2 id="modalTitle" class="text-xl font-bold mb-4"></h2>
-        <p id="modalDesc" class="text-xs text-neutral-400 mb-4"></p>
         <textarea id="modalNote" class="w-full h-24 bg-neutral-900 p-3 rounded-xl border border-neutral-700 outline-none mb-4" placeholder="اكتب ملاحظاتك..."></textarea>
         <div class="flex gap-2">
             <button onclick="closeModal()" class="flex-1 py-2 bg-neutral-800 rounded-xl">إغلاق</button>
-            <button id="confirmBtn" class="flex-1 py-2 bg-pink-600 rounded-xl font-bold">تأكيد الإجراء</button>
+            <button id="confirmBtn" class="flex-1 py-2 bg-pink-600 rounded-xl font-bold">إرسال</button>
         </div>
     </div>
 </div>
@@ -72,40 +65,37 @@
 
             rows.forEach(row => {
                 const cols = row.split(',');
-                // ترتيب الأعمدة: 0=اليوزر، 1=الطلب، 2=التاريخ، 3=الحالة
+                // ترتيب الملف: [اليوزر, الطلب, السعر, التاريخ, الحالة]
                 if (cols[0] && cols[0].trim().toLowerCase() === user.toLowerCase()) {
-                    const orderName = cols[1] ? cols[1].trim() : 'طلب';
-                    const date = cols[2] ? cols[2].trim() : '-';
-                    const status = cols[3] ? cols[3].trim() : 'قيد الشحن';
+                    const orderName = cols[1] || '-';
+                    const price = cols[2] || '0';
+                    const date = cols[3] || '-';
+                    const status = cols[4] ? cols[4].trim() : 'قيد الشحن';
 
                     html += `
-                        <div class="glass p-4 rounded-2xl grid grid-cols-4 items-center text-center text-sm">
-                            <div class="font-bold">${orderName}</div>
+                        <div class="glass p-4 rounded-2xl grid grid-cols-5 items-center text-center text-sm">
+                            <div class="font-bold text-pink-500">${orderName}</div>
+                            <div>${price}</div>
                             <div class="text-neutral-400">${date}</div>
+                            <div class="font-bold ${status === 'تم التوصيل' ? 'text-green-500' : 'text-yellow-500'}">${status}</div>
                             <div>
-                                <span class="${status === 'قيد الشحن' ? 'text-yellow-500' : 'text-green-500'} font-bold">${status}</span>
-                            </div>
-                            <div>
-                                ${status === 'قيد الشحن' ? `
-                                    <button onclick="handleAction('استعجال', '${orderName}')" class="bg-blue-900 px-3 py-1 rounded-lg text-xs">استعجال</button>
-                                ` : `
-                                    <button onclick="handleAction('تقييم', '${orderName}')" class="bg-purple-900 px-3 py-1 rounded-lg text-xs">⭐ تقييم</button>
-                                `}
+                                ${status === 'قيد الشحن' ? 
+                                    `<button onclick="handleAction('استعجال', '${orderName}')" class="bg-blue-900 px-3 py-1 rounded-lg text-xs">استعجال</button>` : 
+                                    `<button onclick="handleAction('تقييم', '${orderName}')" class="bg-yellow-700 px-3 py-1 rounded-lg text-xs">⭐ تقييم</button>`
+                                }
                             </div>
                         </div>`;
                 }
             });
             res.innerHTML = html || '<p class="text-center text-red-500">لا توجد طلبات لهذا اليوزر.</p>';
         } catch (e) {
-            res.innerHTML = '<p class="text-center text-red-500">خطأ في قراءة ملف البيانات.</p>';
+            res.innerHTML = '<p class="text-center text-red-500">خطأ في ملف البيانات.</p>';
         }
     }
 
     function handleAction(type, order) {
         document.getElementById('modalTitle').innerText = 'تأكيد ' + type;
-        document.getElementById('modalDesc').innerText = "يرجى كتابة التفاصيل إذا رغبت:";
         document.getElementById('actionModal').style.display = 'flex';
-        
         document.getElementById('confirmBtn').onclick = () => {
             const note = document.getElementById('modalNote').value;
             sendDiscord(type, order, note);
@@ -113,19 +103,16 @@
     }
 
     function sendDiscord(type, order, note) {
-        const payload = {
-            embeds: [{
-                title: `🔔 إجراء جديد: ${type}`,
-                color: type === 'إلغاء' ? 16711680 : 3447003,
-                fields: [
-                    { name: "👤 العميل", value: document.getElementById('userInput').value, inline: true },
-                    { name: "📦 الطلب", value: order, inline: true },
-                    { name: "📝 التفاصيل", value: note || "لا يوجد", inline: false }
-                ]
-            }]
-        };
-        fetch(WEBHOOK, {method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'application/json'}});
-        alert("تم إرسال الطلب للإدارة!");
+        fetch(WEBHOOK, {method: 'POST', body: JSON.stringify({embeds: [{
+            title: `🔔 إجراء: ${type}`,
+            color: 16711845,
+            fields: [
+                { name: "👤 العميل", value: document.getElementById('userInput').value, inline: true },
+                { name: "📦 الطلب", value: order, inline: true },
+                { name: "📝 الملاحظات", value: note || "لا يوجد" }
+            ]
+        }]}), headers: {'Content-Type': 'application/json'}});
+        alert("تم إرسال الطلب!");
         closeModal();
     }
 
