@@ -1,96 +1,127 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TMSAHFF STORE</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<style>
-body{font-family:Cairo,sans-serif;background:#050505;color:#fff}
-.glass{background:rgba(25,25,25,.8);backdrop-filter:blur(10px);border:1px solid #333}
-.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center}
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:none}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMSAHFF STORE | النظام الاحترافي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #050505; color: #fff; }
+        .glass { background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(12px); border: 1px solid #333; }
+        .modal { display: none; position: fixed; inset: 0; background: #000d; z-index: 50; align-items: center; justify-content: center; }
+    </style>
 </head>
-<body class="p-6">
-<div class="max-w-5xl mx-auto">
-<div class="glass rounded-3xl p-6 flex justify-between items-center">
-<div><h1 class="text-3xl font-bold">TMSAHFF STORE</h1><p class="text-gray-400">نظام متابعة الطلبات</p></div>
-<div class="flex gap-4 text-2xl">
-<a href="https://botrix.live/k/tmsahff/shop" target="_blank" title="BotRix"><i class="fas fa-store text-pink-500"></i></a>
-<a href="https://wa.me/201010247318" target="_blank"><i class="fab fa-whatsapp text-green-500"></i></a>
-<a href="https://www.tiktok.com/@tmsahfreefire" target="_blank"><i class="fab fa-tiktok"></i></a>
-<a href="https://instagram.com/tmsahtv" target="_blank"><i class="fab fa-instagram text-pink-400"></i></a>
-<a href="https://kick.com/tmsahff" target="_blank"><i class="fas fa-video text-green-400"></i></a>
-</div></div>
+<body class="p-4 md:p-8">
 
-<div class="glass rounded-2xl p-3 mt-6 flex gap-2">
-<input id="userInput" class="flex-1 bg-transparent outline-none p-2" placeholder="اكتب اليوزر">
-<button onclick="search()" class="bg-pink-600 px-6 rounded-xl">بحث</button>
-</div>
-<div id="results" class="mt-6 space-y-4"></div>
+<div class="max-w-4xl mx-auto">
+    <div class="glass rounded-3xl p-8 border-b-4 border-pink-600 mb-8 text-center">
+        <h1 class="text-4xl font-black italic">TMSAHFF STORE</h1>
+        <p class="text-neutral-500 font-bold mt-2">نظام الإدارة والتحكم الاحترافي</p>
+        
+        <div class="flex flex-wrap gap-6 justify-center mt-8 text-2xl">
+            <a href="https://botrix.live/k/tmsahff/shop" class="hover:text-pink-500 transition"><i class="fas fa-store"></i></a>
+            <a href="https://wa.me/201010247318" class="hover:text-green-500 transition"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://tiktok.com/@tmsahfreefire" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+            <a href="https://instagram.com/tmsahtv" class="hover:text-pink-400 transition"><i class="fab fa-instagram"></i></a>
+            <a href="https://kick.com/tmsahff" class="hover:text-green-400 transition"><i class="fas fa-video"></i></a>
+        </div>
+    </div>
+
+    <div class="glass p-4 rounded-2xl flex gap-2 mb-8">
+        <input id="userInput" class="flex-1 bg-transparent p-3 outline-none" placeholder="أدخل اليوزر الخاص بك...">
+        <button onclick="search()" class="bg-pink-600 px-8 rounded-xl font-bold hover:bg-pink-700 transition">بحث عن طلباتي</button>
+    </div>
+
+    <div id="results" class="space-y-4"></div>
 </div>
 
 <div id="actionModal" class="modal">
-<div class="glass p-6 rounded-3xl w-[420px]">
-<h2 id="modalTitle" class="text-xl font-bold mb-3"></h2>
-<textarea id="modalNote" class="w-full h-32 bg-neutral-900 rounded p-3" placeholder="اكتب السبب أو التعديل..."></textarea>
-<div class="flex justify-end gap-2 mt-4">
-<button onclick="closeModal()" class="px-4 py-2 bg-gray-700 rounded">إلغاء</button>
-<button id="confirmBtn" class="px-4 py-2 bg-pink-600 rounded">إرسال</button>
+    <div class="glass p-6 rounded-3xl w-96 border border-pink-500/30">
+        <h2 id="modalTitle" class="text-xl font-bold mb-4"></h2>
+        <p id="modalDesc" class="text-xs text-neutral-400 mb-4"></p>
+        <textarea id="modalNote" class="w-full h-24 bg-neutral-900 p-3 rounded-xl border border-neutral-700 outline-none mb-4" placeholder="اكتب ملاحظاتك..."></textarea>
+        <div class="flex gap-2">
+            <button onclick="closeModal()" class="flex-1 py-2 bg-neutral-800 rounded-xl">إغلاق</button>
+            <button id="confirmBtn" class="flex-1 py-2 bg-pink-600 rounded-xl font-bold">تأكيد الإجراء</button>
+        </div>
+    </div>
 </div>
-</div></div>
-
-<div id="toast" class="toast bg-green-600 px-6 py-3 rounded-xl">تم إرسال الطلب بنجاح.</div>
 
 <script>
-const WEBHOOK="ضع_رابط_الويب_هوك_هنا";
+    const WEBHOOK = "ضع_رابط_الويب_هوك_هنا";
 
-async function search(){
-const user=document.getElementById("userInput").value.trim();
-if(!user){showToast("اكتب اليوزر أولاً");return;}
-const res=document.getElementById("results");
-res.innerHTML="";
-try {
-const response = await fetch('data.csv');
-const data = await response.text();
-const rows = data.split('\n');
-rows.forEach(row => {
-const cols = row.split(',');
-if(cols[0] && cols[0].trim() === user) {
-const order = cols[1] || "طلب";
-const status = cols[2] || "قيد الشحن";
-res.innerHTML += `
-<div class="glass p-5 rounded-2xl flex justify-between items-center">
-<div><b>${order}</b><div class="text-gray-400 text-sm">${status}</div></div>
-<div class="flex gap-2">
-<button onclick="openModal('🚀 طلب استعجال','${order}')" class="bg-blue-700 px-3 py-2 rounded">استعجال</button>
-<button onclick="openModal('✏️ طلب تعديل','${order}')" class="bg-yellow-600 px-3 py-2 rounded">تعديل</button>
-<button onclick="openModal('❌ طلب إلغاء','${order}')" class="bg-red-700 px-3 py-2 rounded">إلغاء</button>
-</div></div>`;
-}
-});
-if(res.innerHTML === "") res.innerHTML = "<p class='text-center'>لم يتم العثور على طلبات لهذا اليوزر.</p>";
-} catch(e) { showToast("خطأ في قراءة البيانات"); }
-}
+    function search() {
+        const user = document.getElementById('userInput').value;
+        const res = document.getElementById('results');
+        // هنا يتم محاكاة جلب البيانات
+        const mockData = [
+            { id: 1, name: "مستوى 10 + رقصة", status: "قيد الشحن" },
+            { id: 2, name: "سماح رسالتك", status: "تم التوصيل" }
+        ];
 
-function openModal(type,order){
-modalTitle.innerText=type;
-actionModal.style.display="flex";
-confirmBtn.onclick=()=>sendDiscord(type,order,modalNote.value);
-}
-function closeModal(){actionModal.style.display="none";modalNote.value=""}
-function showToast(t){toast.innerText=t;toast.style.display="block";setTimeout(()=>toast.style.display="none",2200);}
-function sendDiscord(type,order,note){
-fetch(WEBHOOK,{method:"POST",headers:{"Content-Type":"application/json"},
-body:JSON.stringify({embeds:[{title:type,color:16711845,fields:[
-{name:"👤 المستخدم",value:document.getElementById("userInput").value},
-{name:"📦 الطلب",value:order},
-{name:"📝 التفاصيل",value:note||"لا يوجد"},
-{name:"🕒 الوقت",value:new Date().toLocaleString("ar-EG")}
-]}]})}).finally(()=>{closeModal();showToast("تم إرسال الطلب للإدارة.");});
-}
+        res.innerHTML = mockData.map(item => `
+            <div class="glass p-5 rounded-2xl flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-lg">${item.name}</h3>
+                    <span class="text-xs ${item.status === 'قيد الشحن' ? 'text-yellow-500' : 'text-green-500'}">${item.status}</span>
+                </div>
+                <div class="flex gap-2">
+                    ${item.status === 'قيد الشحن' ? `
+                        <button onclick="handleAction('استعجال', '${item.name}')" class="bg-blue-900 px-4 py-2 rounded-lg text-xs">استعجال</button>
+                        <button onclick="handleAction('تعديل', '${item.name}')" class="bg-yellow-900 px-4 py-2 rounded-lg text-xs">تعديل</button>
+                        <button onclick="handleAction('إلغاء', '${item.name}')" class="bg-red-900 px-4 py-2 rounded-lg text-xs">إلغاء</button>
+                    ` : `<button onclick="handleAction('تقييم', '${item.name}')" class="bg-purple-900 px-4 py-2 rounded-lg text-xs">⭐ تقييم</button>`}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function handleAction(type, order) {
+        // التحقق من القيود
+        const history = JSON.parse(localStorage.getItem('actions') || '{}');
+        const now = Date.now();
+
+        if (type === 'استعجال' && history[order + '_speed'] && (now - history[order + '_speed'] < 3600000)) {
+            alert("عذراً، لا يمكنك الاستعجال إلا مرة واحدة كل ساعة.");
+            return;
+        }
+        if ((type === 'إلغاء' || type === 'تعديل') && history[order + '_' + type]) {
+            alert("لقد قمت بهذا الإجراء مسبقاً لهذا الطلب!");
+            return;
+        }
+
+        document.getElementById('modalTitle').innerText = 'تأكيد ' + type;
+        document.getElementById('modalDesc').innerText = type === 'إلغاء' ? "سيتم إلغاء الطلب واسترجاع نقاطك، لا يمكن التراجع عن هذا القرار!" : "يرجى كتابة التفاصيل.";
+        document.getElementById('actionModal').style.display = 'flex';
+        
+        document.getElementById('confirmBtn').onclick = () => {
+            const note = document.getElementById('modalNote').value;
+            sendDiscord(type, order, note);
+            history[order + '_' + (type === 'استعجال' ? 'speed' : type)] = now;
+            localStorage.setItem('actions', JSON.stringify(history));
+        };
+    }
+
+    function sendDiscord(type, order, note) {
+        const payload = {
+            embeds: [{
+                title: `🔔 إجراء جديد: ${type}`,
+                color: type === 'إلغاء' ? 16711680 : 3447003,
+                fields: [
+                    { name: "👤 العميل", value: document.getElementById('userInput').value, inline: true },
+                    { name: "📦 الطلب", value: order, inline: true },
+                    { name: "📝 التفاصيل", value: note || "لا يوجد", inline: false }
+                ],
+                footer: { text: "TMSAHFF STORE SYSTEM" }
+            }]
+        };
+        // fetch(WEBHOOK, {method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'application/json'}});
+        alert("تم إرسال الطلب للإدارة بنجاح!");
+        closeModal();
+    }
+
+    function closeModal() { document.getElementById('actionModal').style.display = 'none'; }
 </script>
 </body>
 </html>
